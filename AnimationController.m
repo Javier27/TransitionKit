@@ -8,6 +8,7 @@
 
 #import "AnimationController.h"
 #import "PresentedVC.h"
+#import "TransitionTypes.h"
 
 @implementation AnimationController
 
@@ -72,6 +73,7 @@
     }
 }
 
+/*
 - (void)animateContainers:(UIViewController *)toVC
 {
     [UIView animateWithDuration:0.5
@@ -93,6 +95,7 @@
                      }
                      completion:nil];
 }
+*/
 
 - (void)completeAnimation:(id<UIViewControllerContextTransitioning>)ctx
 {

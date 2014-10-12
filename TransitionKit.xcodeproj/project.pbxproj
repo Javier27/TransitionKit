@@ -47,6 +47,7 @@
 		F3A230D519E979A600B076C9 /* PresentedVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PresentedVC.h; sourceTree = "<group>"; };
 		F3A230D619E979A600B076C9 /* PresentedVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PresentedVC.m; sourceTree = "<group>"; };
 		F3A230D819E97D4600B076C9 /* TransitionTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TransitionTypes.h; sourceTree = "<group>"; };
+		F3AF366419EB005F00B28D5C /* TransitionViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TransitionViewController.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,6 +71,7 @@
 		F3A2309119E96BE900B076C9 = {
 			isa = PBXGroup;
 			children = (
+				F3AF366419EB005F00B28D5C /* TransitionViewController.h */,
 				F3A230D819E97D4600B076C9 /* TransitionTypes.h */,
 				F3A230D519E979A600B076C9 /* PresentedVC.h */,
 				F3A230D619E979A600B076C9 /* PresentedVC.m */,
