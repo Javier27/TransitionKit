@@ -2,7 +2,7 @@
 //  AppDelegate.h
 //  TransitionKit
 //
-//  Created by Richie Davis on 10/11/14.
+//  Created by Richie Davis on 10/04/14.
 //  Copyright (c) 2014 Vissix. All rights reserved.
 //
 

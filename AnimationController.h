@@ -13,11 +13,17 @@
 
 /* if presenting, then use present animation, else use dismissing animation */
 @property bool isPresenting;
+@property bool callAnimateSubviewsForPresent;
+@property bool callAnimateSubviewsForPresenting;
+@property bool callAnimateSubviewsForDismiss;
+@property bool callAnimateSubviewsForDismissing;
 @property TransitionAnimationType animationType;
+
 @property NSTimeInterval transitionDuration;
 @property CGFloat dampingRatio;
 @property CGFloat initialVelocity;
 
+- (void)setSubviewAnimationForPresented:(bool)animatePresentedSubviews forDismissed:(bool)animateDismissedSubviews forPresenting:(bool)animatePresentingSubviews forDismissing:(bool)animateDismissingSubviews;
 -(NSTimeInterval)transitionDuration:(id<UIViewControllerContextTransitioning>)transitionContext;
 -(void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext;
 

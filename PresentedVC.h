@@ -10,4 +10,9 @@
 
 @interface PresentedVC : UIViewController
 @property (strong, nonatomic) UIView *containerView;
+
+- (void)animateSubviewsForPresent;
+- (void)animateSubviewsForDismiss;
+- (void)animateSubviewsForPresenting;
+- (void)animateSubviewsForDismissing;
 @end

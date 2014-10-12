@@ -21,10 +21,20 @@
     // direct to animation or dismissal
     if (self.isPresenting) {
         [self animatePresentTransition:ctx];
-        [self animateContainers:[ctx viewControllerForKey:UITransitionContextToViewControllerKey]];
+        if (self.callAnimateSubviewsForPresent) {
+            [(PresentedVC *)[ctx viewControllerForKey:UITransitionContextToViewControllerKey] animateSubviewsForPresent];
+        }
+        if (self.callAnimateSubviewsForPresenting) {
+            [(PresentedVC *)[ctx viewControllerForKey:UITransitionContextFromViewControllerKey] animateSubviewsForPresenting];
+        }
     } else {
-        [self reverseAnimateContainers:[ctx viewControllerForKey:UITransitionContextFromViewControllerKey]];
         [self animateDismissTransition:ctx];
+        if (self.callAnimateSubviewsForDismiss) {
+            [(PresentedVC *)[ctx viewControllerForKey:UITransitionContextToViewControllerKey] animateSubviewsForDismissing];
+        }
+        if (self.callAnimateSubviewsForDismissing) {
+            [(PresentedVC *)[ctx viewControllerForKey:UITransitionContextFromViewControllerKey] animateSubviewsForDismiss];
+        }
     }
 }
 
@@ -102,6 +112,14 @@
                      }];
 }
 
+- (void)setSubviewAnimationForPresented:(bool)animatePresentedSubviews forDismissed:(bool)animateDismissedSubviews forPresenting:(bool)animatePresentingSubviews forDismissing:(bool)animateDismissingSubviews
+{
+    self.callAnimateSubviewsForPresent = animatePresentedSubviews;
+    self.callAnimateSubviewsForDismiss = animateDismissedSubviews;
+    self.callAnimateSubviewsForPresenting = animatePresentingSubviews;
+    self.callAnimateSubviewsForDismissing = animateDismissingSubviews;
+}
+
 // All methods below are for handling the actual animations
 
 - (void)standardFromTop:(id<UIViewControllerContextTransitioning>)ctx
@@ -162,9 +180,9 @@
         toVC.view.frame = CGRectMake(self.view.frame.size.width, self.view.frame.origin.y, self.view.frame.size.width, self.view.frame.size.height);
         
         [inView addSubview:toVC.view];
-        [UIView animateWithDuration:0.5 animations:^(void){
+        [UIView animateWithDuration:0.5 delay:0.5 options:0 animations:^(void){
             toVC.view.center = inView.center;
-        } completion:^(bool finished){
+        } completion:^(bool finished) {
             [self completeAnimation:ctx];
         }];
     } else {

@@ -34,4 +34,26 @@
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
+- (void)animateSubviewsForPresent
+{
+    [UIView animateWithDuration:0.5
+                          delay:1.0
+                        options:0
+                     animations:^(void) {
+                         self.containerView.transform = CGAffineTransformScale(self.containerView.transform, 100, 100);
+                     }
+                     completion:nil];
+}
+
+- (void)animateSubviewsForDismiss
+{
+    [UIView animateWithDuration:0.5
+                          delay:0.0
+                        options:0
+                     animations:^(void) {
+                         self.containerView.transform = CGAffineTransformScale(self.containerView.transform, .01, .01);
+                     }
+                     completion:nil];
+}
+
 @end
