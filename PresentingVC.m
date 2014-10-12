@@ -45,6 +45,19 @@
             [self.view addSubview:button];
         }
     }
+    
+    self.containerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 300, 300)];
+    CGPoint center = self.view.center;
+    center.y = center.y+150;
+    self.containerView.center = center;
+    [self.view addSubview:self.containerView];
+    
+    button = [UIButton buttonWithType:UIButtonTypeCustom];
+    button.frame =CGRectMake(0, 0, 300, 300);
+    button.backgroundColor = [UIColor clearColor];
+    [button setImage:[UIImage imageNamed:@"lovers"] forState:UIControlStateNormal];
+    [self.containerView addSubview:button];
+    self.containerView.transform = CGAffineTransformScale(self.containerView.transform, .01, .01);
 }
 
 - (void)changeViews:(id)sender
@@ -65,6 +78,7 @@
     }
     
     self.animationController.animationType = transitionAnimation;
+    [self.animationController setSubviewAnimationForPresented:YES forDismissed:YES forPresenting:YES forDismissing:YES];
     
     PresentedVC *controller = [[PresentedVC alloc] init];
     controller.transitioningDelegate = self;
@@ -84,6 +98,28 @@
 - (id <UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed {
     self.animationController.isPresenting = NO;
     return self.animationController;
+}
+
+- (void)animateSubviewsForPresenting
+{
+    [UIView animateWithDuration:0.5
+                          delay:0.0
+                        options:0
+                     animations:^(void) {
+                         self.containerView.transform = CGAffineTransformScale(self.containerView.transform, 100, 100);
+                     }
+                     completion:nil];
+}
+
+- (void)animateSubviewsForDismissing
+{
+    [UIView animateWithDuration:0.5
+                          delay:1.0
+                        options:0
+                     animations:^(void) {
+                         self.containerView.transform = CGAffineTransformScale(self.containerView.transform, .01, .01);
+                     }
+                     completion:nil];
 }
 
 @end

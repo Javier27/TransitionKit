@@ -13,5 +13,6 @@
 @interface PresentingVC : UIViewController <UIViewControllerTransitioningDelegate>
 
 @property (strong, nonatomic) AnimationController *animationController;
+@property (strong, nonatomic) UIView *containerView;
 
 @end
