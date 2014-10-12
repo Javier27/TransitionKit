@@ -7,7 +7,8 @@
 //
 
 #import "AnimationController.h"
-#import "PresentedVC.h"
+#import "TransitionViewController.h"
+#import "TransitionTypes.h"
 
 @implementation AnimationController
 
@@ -22,18 +23,18 @@
     if (self.isPresenting) {
         [self animatePresentTransition:ctx];
         if (self.callAnimateSubviewsForPresent) {
-            [(PresentedVC *)[ctx viewControllerForKey:UITransitionContextToViewControllerKey] animateSubviewsForPresent];
+            [(TransitionViewController *)[ctx viewControllerForKey:UITransitionContextToViewControllerKey] animateSubviewsForPresent];
         }
         if (self.callAnimateSubviewsForPresenting) {
-            [(PresentedVC *)[ctx viewControllerForKey:UITransitionContextFromViewControllerKey] animateSubviewsForPresenting];
+            [(TransitionViewController *)[ctx viewControllerForKey:UITransitionContextFromViewControllerKey] animateSubviewsForPresenting];
         }
     } else {
         [self animateDismissTransition:ctx];
         if (self.callAnimateSubviewsForDismiss) {
-            [(PresentedVC *)[ctx viewControllerForKey:UITransitionContextToViewControllerKey] animateSubviewsForDismissing];
+            [(TransitionViewController *)[ctx viewControllerForKey:UITransitionContextToViewControllerKey] animateSubviewsForDismissing];
         }
         if (self.callAnimateSubviewsForDismissing) {
-            [(PresentedVC *)[ctx viewControllerForKey:UITransitionContextFromViewControllerKey] animateSubviewsForDismiss];
+            [(TransitionViewController *)[ctx viewControllerForKey:UITransitionContextFromViewControllerKey] animateSubviewsForDismiss];
         }
     }
 }
@@ -70,28 +71,6 @@
             [self standardFromRight:ctx :false];
             break;
     }
-}
-
-- (void)animateContainers:(UIViewController *)toVC
-{
-    [UIView animateWithDuration:0.5
-                          delay:0.5
-                        options:0
-                     animations:^(void) {
-                         ((PresentedVC *)toVC).containerView.transform = CGAffineTransformScale(((PresentedVC *)toVC).containerView.transform, 100, 100);
-                     }
-                     completion:nil];
-}
-
-- (void)reverseAnimateContainers:(UIViewController *)toVC
-{
-    [UIView animateWithDuration:0.5
-                          delay:0.0
-                        options:0
-                     animations:^(void) {
-                         ((PresentedVC *)toVC).containerView.transform = CGAffineTransformScale(((PresentedVC *)toVC).containerView.transform, .01, .01);
-                     }
-                     completion:nil];
 }
 
 - (void)completeAnimation:(id<UIViewControllerContextTransitioning>)ctx
