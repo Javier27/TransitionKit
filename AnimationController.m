@@ -18,6 +18,8 @@
     if (self) {
         self.transitionPresentationDuration = 0.5;
         self.transitionDismissalDuration = 0.5;
+        self.transitionPresentationDelay = 0.0;
+        self.transitionDismissalDelay = 0.0;
     }
     
     return self;
@@ -34,9 +36,31 @@
 
 - (void)animateTransition:(id<UIViewControllerContextTransitioning>)ctx
 {
+    UIView *inView = [ctx containerView];
+    UIViewController *toVC = [ctx viewControllerForKey:UITransitionContextToViewControllerKey];
+    UIViewController* fromVC = [ctx viewControllerForKey:UITransitionContextFromViewControllerKey];
+    
+    // call animation
+    switch (self.animationType) {
+        case TransitionAnimationFromTop:
+            [self standardFromTop:ctx :inView :toVC :fromVC];
+            break;
+        case TransitionAnimationFromBottom:
+            [self standardFromBottom:ctx :inView :toVC :fromVC];
+            break;
+        case TransitionAnimationFromLeft:
+            [self standardFromLeft:ctx :inView :toVC :fromVC];
+            break;
+        case TransitionAnimationDropAndFade:
+            [self dropBackAndFade:ctx :inView :toVC :fromVC];
+            break;
+        default:
+            [self standardFromRight:ctx :inView :toVC :fromVC];
+            break;
+    }
+    
     // direct to animation or dismissal
     if (self.isPresenting) {
-        [self animatePresentTransition:ctx];
         if (self.callAnimateSubviewsForPresent) {
             [(TransitionViewController *)[ctx viewControllerForKey:UITransitionContextToViewControllerKey] animateSubviewsForPresent];
         }
@@ -44,55 +68,12 @@
             [(TransitionViewController *)[ctx viewControllerForKey:UITransitionContextFromViewControllerKey] animateSubviewsForPresenting];
         }
     } else {
-        [self animateDismissTransition:ctx];
         if (self.callAnimateSubviewsForDismiss) {
             [(TransitionViewController *)[ctx viewControllerForKey:UITransitionContextToViewControllerKey] animateSubviewsForDismissing];
         }
         if (self.callAnimateSubviewsForDismissing) {
             [(TransitionViewController *)[ctx viewControllerForKey:UITransitionContextFromViewControllerKey] animateSubviewsForDismiss];
         }
-    }
-}
-
-- (void)animatePresentTransition:(id<UIViewControllerContextTransitioning>)ctx
-{
-    switch (self.animationType) {
-        case TransitionAnimationFromTop:
-            [self standardFromTop:ctx :YES];
-            break;
-        case TransitionAnimationFromBottom:
-            [self standardFromBottom:ctx :YES];
-            break;
-        case TransitionAnimationFromLeft:
-            [self standardFromLeft:ctx :YES];
-            break;
-        case TransitionAnimationDropAndFade:
-            [self dropBackAndFade:ctx :YES];
-            break;
-        default:
-            [self standardFromRight:ctx :YES];
-            break;
-    }
-}
-
-- (void)animateDismissTransition:(id<UIViewControllerContextTransitioning>)ctx
-{
-    switch (self.animationType) {
-        case TransitionAnimationFromTop:
-            [self standardFromTop:ctx :NO];
-            break;
-        case TransitionAnimationFromBottom:
-            [self standardFromBottom:ctx :NO];
-            break;
-        case TransitionAnimationFromLeft:
-            [self standardFromLeft:ctx :NO];
-            break;
-        case TransitionAnimationDropAndFade:
-            [self dropBackAndFade:ctx :NO];
-            break;
-        default:
-            [self standardFromRight:ctx :NO];
-            break;
     }
 }
 
@@ -134,181 +115,192 @@
 
 // All methods below are for handling the actual animations
 
-- (void)standardFromTop:(id<UIViewControllerContextTransitioning>)ctx :(bool)present
+- (void)standardFromTop:(id<UIViewControllerContextTransitioning>)ctx :(UIView *)inView :(UIViewController *)toVC :(UIViewController *)fromVC
 {
-    if (present) {
-        UIView *inView = [ctx containerView];
-        UIViewController *toVC = [ctx viewControllerForKey:UITransitionContextToViewControllerKey];
-        UIViewController* fromVC = [ctx viewControllerForKey:UITransitionContextFromViewControllerKey];
-        
+    if (self.isPresenting) {
         toVC.view.frame = CGRectMake(self.view.frame.origin.x, -1*self.view.frame.size.height, self.view.frame.size.width, self.view.frame.size.height);
         
         [inView addSubview:toVC.view];
-        [UIView animateWithDuration:0.5 animations:^(void){
+
+        void(^animationBlock)(void) = ^() {
             toVC.view.center = inView.center;
-        } completion:^(bool finished){
-            [self completeAnimation:ctx];
-        }];
-    } else {
-        UIView *inView = [ctx containerView];
-        UIViewController *toVC = [ctx viewControllerForKey:UITransitionContextToViewControllerKey];
-        UIViewController* fromVC = [ctx viewControllerForKey:UITransitionContextFromViewControllerKey];
+        };
         
+        void(^completionBlock)(bool) = ^(bool finished) {
+            [self completeAnimation:ctx];
+        };
+        
+        [self handleAnimationWithAnimation:animationBlock andCompletion:completionBlock];
+    } else {
         // fromVC.view.alpha = 1.0;
         
-        CGPoint finalCenter = CGPointMake(inView.center.x, inView.center.y - inView.frame.size.height);
-        
         [inView insertSubview:toVC.view belowSubview:fromVC.view];
-        [UIView animateWithDuration:0.5 delay:0.5 options:0 animations:^(void){
+        
+        void(^animationBlock)(void) = ^() {
+            CGPoint finalCenter = CGPointMake(inView.center.x, inView.center.y - inView.frame.size.height);
             fromVC.view.center = finalCenter;
-        } completion:^(bool finished) {
+        };
+        
+        void(^completionBlock)(bool) = ^(bool finished) {
             [self completeDismissal:ctx];
-        }];
+        };
+        
+        [self handleAnimationWithAnimation:animationBlock andCompletion:completionBlock];
     }
     
 }
 
-- (void)standardFromBottom:(id<UIViewControllerContextTransitioning>)ctx :(bool)present
+- (void)standardFromBottom:(id<UIViewControllerContextTransitioning>)ctx :(UIView *)inView :(UIViewController *)toVC :(UIViewController *)fromVC
 {
-    if (present) {
-        UIView *inView = [ctx containerView];
-        UIViewController *toVC = [ctx viewControllerForKey:UITransitionContextToViewControllerKey];
-        UIViewController* fromVC = [ctx viewControllerForKey:UITransitionContextFromViewControllerKey];
-        
+    if (self.isPresenting) {
         toVC.view.frame = CGRectMake(self.view.frame.origin.x, self.view.frame.size.height, self.view.frame.size.width, self.view.frame.size.height);
         
         [inView addSubview:toVC.view];
-        [UIView animateWithDuration:0.5 animations:^(void){
+
+        void(^animationBlock)(void) = ^() {
             toVC.view.center = inView.center;
-        } completion:^(bool finished){
+        };
+        
+        void(^completionBlock)(bool) = ^(bool finished) {
             [self completeAnimation:ctx];
-        }];
+        };
+        
+        [self handleAnimationWithAnimation:animationBlock andCompletion:completionBlock];
     } else {
-        UIView *inView = [ctx containerView];
-        UIViewController *toVC = [ctx viewControllerForKey:UITransitionContextToViewControllerKey];
-        UIViewController* fromVC = [ctx viewControllerForKey:UITransitionContextFromViewControllerKey];
-        
         // fromVC.view.alpha = 1.0;
-        
-        CGPoint finalCenter = CGPointMake(inView.center.x, inView.center.y + inView.frame.size.height);
-        
+
         [inView insertSubview:toVC.view belowSubview:fromVC.view];
-        [UIView animateWithDuration:0.5 delay:0.5 options:0 animations:^(void){
+
+        void(^animationBlock)(void) = ^() {
+            CGPoint finalCenter = CGPointMake(inView.center.x, inView.center.y + inView.frame.size.height);
             fromVC.view.center = finalCenter;
-        } completion:^(bool finished) {
+        };
+        
+        void(^completionBlock)(bool) = ^(bool finished) {
             [self completeDismissal:ctx];
-        }];
+        };
+        
+        [self handleAnimationWithAnimation:animationBlock andCompletion:completionBlock];
     }
 }
 
-- (void)standardFromLeft:(id<UIViewControllerContextTransitioning>)ctx :(bool)present
+- (void)standardFromLeft:(id<UIViewControllerContextTransitioning>)ctx :(UIView *)inView :(UIViewController *)toVC :(UIViewController *)fromVC
 {
-    if (present) {
-        UIView *inView = [ctx containerView];
-        UIViewController *toVC = [ctx viewControllerForKey:UITransitionContextToViewControllerKey];
-        UIViewController* fromVC = [ctx viewControllerForKey:UITransitionContextFromViewControllerKey];
-        
+    if (self.isPresenting) {
         toVC.view.frame = CGRectMake(-1*self.view.frame.size.width, self.view.frame.origin.y, self.view.frame.size.width, self.view.frame.size.height);
         
         [inView addSubview:toVC.view];
-        [UIView animateWithDuration:0.5 animations:^(void){
+
+        void(^animationBlock)(void) = ^() {
             toVC.view.center = inView.center;
-        } completion:^(bool finished){
+        };
+        
+        void(^completionBlock)(bool) = ^(bool finished) {
             [self completeAnimation:ctx];
-        }];
+        };
+        
+        [self handleAnimationWithAnimation:animationBlock andCompletion:completionBlock];
     } else {
-        UIView *inView = [ctx containerView];
-        UIViewController *toVC = [ctx viewControllerForKey:UITransitionContextToViewControllerKey];
-        UIViewController* fromVC = [ctx viewControllerForKey:UITransitionContextFromViewControllerKey];
-        
         // fromVC.view.alpha = 1.0;
-        
-        CGPoint finalCenter = CGPointMake(inView.center.x - inView.frame.size.width, inView.center.y);
-        
         [inView insertSubview:toVC.view belowSubview:fromVC.view];
-        [UIView animateWithDuration:0.5 delay:0.5 options:0 animations:^(void){
+
+        void(^animationBlock)(void) = ^() {
+            CGPoint finalCenter = CGPointMake(inView.center.x - inView.frame.size.width, inView.center.y);
             fromVC.view.center = finalCenter;
-        } completion:^(bool finished) {
+        };
+        
+        void(^completionBlock)(bool) = ^(bool finished) {
             [self completeDismissal:ctx];
-        }];
+        };
+        
+        [self handleAnimationWithAnimation:animationBlock andCompletion:completionBlock];
     }
 }
 
-- (void)standardFromRight:(id<UIViewControllerContextTransitioning>)ctx :(bool)present
+- (void)standardFromRight:(id<UIViewControllerContextTransitioning>)ctx :(UIView *)inView :(UIViewController *)toVC :(UIViewController *)fromVC
 {
-    if (present) {
-        UIView *inView = [ctx containerView];
-        UIViewController *toVC = [ctx viewControllerForKey:UITransitionContextToViewControllerKey];
-        UIViewController* fromVC = [ctx viewControllerForKey:UITransitionContextFromViewControllerKey];
-        
+    if (self.isPresenting) {
         toVC.view.frame = CGRectMake(self.view.frame.size.width, self.view.frame.origin.y, self.view.frame.size.width, self.view.frame.size.height);
         
         [inView addSubview:toVC.view];
-        [UIView animateWithDuration:0.5 delay:0.5 options:0 animations:^(void){
-            toVC.view.center = inView.center;
-        } completion:^(bool finished) {
-            [self completeAnimation:ctx];
-        }];
-    } else {
-        UIView *inView = [ctx containerView];
-        UIViewController *toVC = [ctx viewControllerForKey:UITransitionContextToViewControllerKey];
-        UIViewController* fromVC = [ctx viewControllerForKey:UITransitionContextFromViewControllerKey];
         
+        void(^animationBlock)(void) = ^() {
+            toVC.view.center = inView.center;
+        };
+        
+        void(^completionBlock)(bool) = ^(bool finished) {
+            [self completeAnimation:ctx];
+        };
+        
+        [self handleAnimationWithAnimation:animationBlock andCompletion:completionBlock];
+    } else {
         // fromVC.view.alpha = 1.0;
         
-        CGPoint finalCenter = CGPointMake(inView.center.x + inView.frame.size.width, inView.center.y);
-        
         [inView insertSubview:toVC.view belowSubview:fromVC.view];
-        [UIView animateWithDuration:0.5 delay:0.5 options:0 animations:^(void){
+
+        void(^animationBlock)(void) = ^() {
+            CGPoint finalCenter = CGPointMake(inView.center.x + inView.frame.size.width, inView.center.y);
             fromVC.view.center = finalCenter;
-        } completion:^(bool finished) {
+        };
+        
+        void(^completionBlock)(bool) = ^(bool finished) {
             [self completeDismissal:ctx];
-        }];
+        };
+        
+        [self handleAnimationWithAnimation:animationBlock andCompletion:completionBlock];
     }
 }
 
-- (void)dropBackAndFade:(id<UIViewControllerContextTransitioning>)ctx :(bool)present
+- (void)dropBackAndFade:(id<UIViewControllerContextTransitioning>)ctx :(UIView *)inView :(UIViewController *)toVC :(UIViewController *)fromVC
 {
-    if (present) {
-        UIView *inView = [ctx containerView];
-        UIViewController *toVC = [ctx viewControllerForKey:UITransitionContextToViewControllerKey];
-        UIViewController* fromVC = [ctx viewControllerForKey:UITransitionContextFromViewControllerKey];
-        
+    if (self.isPresenting) {
         CGPoint centerOffScreen = inView.center;
         centerOffScreen.y = (-1)*inView.frame.size.height;
         toVC.view.center = centerOffScreen;
         
         [inView addSubview:toVC.view];
         
-        
-        [UIView animateWithDuration:0.5 animations:^(void){
+        void(^animationBlock)(void) = ^() {
             fromVC.view.transform = (CGAffineTransformScale(fromVC.view.transform, .8, .8));
             fromVC.view.alpha = 0.5;
             toVC.view.center = inView.center;
-        } completion:^(bool finished){
-            [self completeAnimation:ctx];
-        }];
-    } else {
-        UIView *inView = [ctx containerView];
-        UIViewController *toVC = [ctx viewControllerForKey:UITransitionContextToViewControllerKey];
-        UIViewController* fromVC = [ctx viewControllerForKey:UITransitionContextFromViewControllerKey];
+        };
         
+        void(^completionBlock)(bool) = ^(bool finished) {
+            [self completeAnimation:ctx];
+        };
+        
+        [self handleAnimationWithAnimation:animationBlock andCompletion:completionBlock];
+    } else {
         CGPoint centerOffScreen = inView.center;
         centerOffScreen.y = (-1)*inView.frame.size.height;
         
         [inView insertSubview:toVC.view belowSubview:fromVC.view];
         toVC.view.alpha = 0.5;
         
-        [UIView animateWithDuration:0.5 delay:0.5 options:0
-                         animations:^(void) {
-                             toVC.view.transform = (CGAffineTransformScale(toVC.view.transform, 1/.8, 1/.8));
-                             toVC.view.alpha = 1.0;
-                             fromVC.view.center = centerOffScreen;
-                         } completion:^(bool finished){
-                             [self completeDismissal:ctx];
-                         }];
+        void(^animationBlock)(void) = ^() {
+            toVC.view.transform = (CGAffineTransformScale(toVC.view.transform, 1/.8, 1/.8));
+            toVC.view.alpha = 1.0;
+            fromVC.view.center = centerOffScreen;
+        };
+        
+        void(^completionBlock)(bool) = ^(bool finished) {
+            [self completeDismissal:ctx];
+        };
+        
+        [self handleAnimationWithAnimation:animationBlock andCompletion:completionBlock];
     }
     
+}
+
+// Helper Methods
+- (void)handleAnimationWithAnimation:(void (^)(void))animationBlock andCompletion:(void (^)(bool finished))completionOrNil
+{
+    if (self.isPresenting) {
+        [UIView animateWithDuration:self.transitionPresentationDuration delay:self.transitionPresentationDelay options:0 animations:animationBlock completion:completionOrNil];
+    } else {
+        [UIView animateWithDuration:self.transitionDismissalDuration delay:self.transitionDismissalDelay options:0 animations:animationBlock completion:completionOrNil];
+    }
 }
 
 @end

@@ -21,6 +21,8 @@
 
 @property NSTimeInterval transitionPresentationDuration;
 @property NSTimeInterval transitionDismissalDuration;
+@property NSTimeInterval transitionPresentationDelay;
+@property NSTimeInterval transitionDismissalDelay;
 @property CGFloat dampingRatio;
 @property CGFloat initialVelocity;
 
