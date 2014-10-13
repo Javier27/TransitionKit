@@ -12,9 +12,24 @@
 
 @implementation AnimationController
 
--(NSTimeInterval)transitionDuration:(id<UIViewControllerContextTransitioning>)transitionContext{
+- (id)init
+{
+    self = [super init];
+    if (self) {
+        self.transitionPresentationDuration = 0.5;
+        self.transitionDismissalDuration = 0.5;
+    }
     
-    return 0.5;
+    return self;
+}
+
+- (NSTimeInterval)transitionDuration:(id<UIViewControllerContextTransitioning>)transitionContext
+{
+    if (self.isPresenting) {
+        return self.transitionPresentationDuration;
+    } else {
+        return self.transitionDismissalDuration;
+    }
 }
 
 - (void)animateTransition:(id<UIViewControllerContextTransitioning>)ctx
@@ -43,19 +58,19 @@
 {
     switch (self.animationType) {
         case TransitionAnimationFromTop:
-            [self standardFromTop:ctx];
+            [self standardFromTop:ctx :YES];
             break;
         case TransitionAnimationFromBottom:
-            [self standardFromBottom:ctx];
+            [self standardFromBottom:ctx :YES];
             break;
         case TransitionAnimationFromLeft:
-            [self standardFromLeft:ctx];
+            [self standardFromLeft:ctx :YES];
             break;
         case TransitionAnimationDropAndFade:
-            [self dropBackAndFade:ctx];
+            [self dropBackAndFade:ctx :YES];
             break;
         default:
-            [self standardFromRight:ctx :true];
+            [self standardFromRight:ctx :YES];
             break;
     }
 }
@@ -63,12 +78,20 @@
 - (void)animateDismissTransition:(id<UIViewControllerContextTransitioning>)ctx
 {
     switch (self.animationType) {
-        case TransitionAnimationDropAndFade:
-            [self dropBackAndFadeDismiss:ctx];
+        case TransitionAnimationFromTop:
+            [self standardFromTop:ctx :NO];
             break;
-            
+        case TransitionAnimationFromBottom:
+            [self standardFromBottom:ctx :NO];
+            break;
+        case TransitionAnimationFromLeft:
+            [self standardFromLeft:ctx :NO];
+            break;
+        case TransitionAnimationDropAndFade:
+            [self dropBackAndFade:ctx :NO];
+            break;
         default:
-            [self standardFromRight:ctx :false];
+            [self standardFromRight:ctx :NO];
             break;
     }
 }
@@ -99,25 +122,51 @@
     self.callAnimateSubviewsForDismissing = animateDismissingSubviews;
 }
 
-// All methods below are for handling the actual animations
-
-- (void)standardFromTop:(id<UIViewControllerContextTransitioning>)ctx
+- (void)setDurationForPresentation:(NSTimeInterval)duration
 {
-    UIView *inView = [ctx containerView];
-    UIViewController *toVC = [ctx viewControllerForKey:UITransitionContextToViewControllerKey];
-    UIViewController* fromVC = [ctx viewControllerForKey:UITransitionContextFromViewControllerKey];
-    
-    toVC.view.frame = CGRectMake(self.view.frame.origin.x, -1*self.view.frame.size.height, self.view.frame.size.width, self.view.frame.size.height);
-    
-    [inView addSubview:toVC.view];
-    [UIView animateWithDuration:0.5 animations:^(void){
-        toVC.view.center = inView.center;
-    } completion:^(bool finished){
-        [self completeAnimation:ctx];
-    }];
+    self.transitionPresentationDuration = duration;
 }
 
-- (void)standardFromBottom:(id<UIViewControllerContextTransitioning>)ctx
+- (void)setDurationForDismissal:(NSTimeInterval)duration
+{
+    self.transitionDismissalDuration = duration;
+}
+
+// All methods below are for handling the actual animations
+
+- (void)standardFromTop:(id<UIViewControllerContextTransitioning>)ctx :(bool)present
+{
+    if (present) {
+        UIView *inView = [ctx containerView];
+        UIViewController *toVC = [ctx viewControllerForKey:UITransitionContextToViewControllerKey];
+        UIViewController* fromVC = [ctx viewControllerForKey:UITransitionContextFromViewControllerKey];
+        
+        toVC.view.frame = CGRectMake(self.view.frame.origin.x, -1*self.view.frame.size.height, self.view.frame.size.width, self.view.frame.size.height);
+        
+        [inView addSubview:toVC.view];
+        [UIView animateWithDuration:0.5 animations:^(void){
+            toVC.view.center = inView.center;
+        } completion:^(bool finished){
+            [self completeAnimation:ctx];
+        }];
+    } else {
+        UIView *inView = [ctx containerView];
+        UIViewController *toVC = [ctx viewControllerForKey:UITransitionContextToViewControllerKey];
+        UIViewController* fromVC = [ctx viewControllerForKey:UITransitionContextFromViewControllerKey];
+        
+        toVC.view.frame = CGRectMake(self.view.frame.origin.x, -1*self.view.frame.size.height, self.view.frame.size.width, self.view.frame.size.height);
+        
+        [inView addSubview:toVC.view];
+        [UIView animateWithDuration:0.5 animations:^(void){
+            toVC.view.center = inView.center;
+        } completion:^(bool finished){
+            [self completeAnimation:ctx];
+        }];
+    }
+    
+}
+
+- (void)standardFromBottom:(id<UIViewControllerContextTransitioning>)ctx :(bool)present
 {
     UIView *inView = [ctx containerView];
     UIViewController *toVC = [ctx viewControllerForKey:UITransitionContextToViewControllerKey];
@@ -133,7 +182,7 @@
     }];
 }
 
-- (void)standardFromLeft:(id<UIViewControllerContextTransitioning>)ctx
+- (void)standardFromLeft:(id<UIViewControllerContextTransitioning>)ctx :(bool)present
 {
     UIView *inView = [ctx containerView];
     UIViewController *toVC = [ctx viewControllerForKey:UITransitionContextToViewControllerKey];
@@ -149,9 +198,9 @@
     }];
 }
 
-- (void)standardFromRight:(id<UIViewControllerContextTransitioning>)ctx :(bool)animate
+- (void)standardFromRight:(id<UIViewControllerContextTransitioning>)ctx :(bool)present
 {
-    if (animate) {
+    if (present) {
         UIView *inView = [ctx containerView];
         UIViewController *toVC = [ctx viewControllerForKey:UITransitionContextToViewControllerKey];
         UIViewController* fromVC = [ctx viewControllerForKey:UITransitionContextFromViewControllerKey];
@@ -182,7 +231,7 @@
     }
 }
 
-- (void)dropBackAndFade:(id<UIViewControllerContextTransitioning>)ctx
+- (void)dropBackAndFade:(id<UIViewControllerContextTransitioning>)ctx :(bool)present
 {
     UIView *inView = [ctx containerView];
     UIViewController *toVC = [ctx viewControllerForKey:UITransitionContextToViewControllerKey];

@@ -19,7 +19,8 @@
 @property bool callAnimateSubviewsForDismissing;
 @property TransitionAnimationType animationType;
 
-@property NSTimeInterval transitionDuration;
+@property NSTimeInterval transitionPresentationDuration;
+@property NSTimeInterval transitionDismissalDuration;
 @property CGFloat dampingRatio;
 @property CGFloat initialVelocity;
 
