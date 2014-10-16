@@ -79,6 +79,7 @@
     
     self.animationController.animationType = transitionAnimation;
     [self.animationController setSubviewAnimationForPresented:YES forDismissed:YES forPresenting:YES forDismissing:YES];
+    [self.animationController setDurationForPresentation:0.5 presentationDelay:0.5 dismissal:0.5 dismissalDelay:0.5];
     
     PresentedVC *controller = [[PresentedVC alloc] init];
     controller.transitioningDelegate = self;
