@@ -87,15 +87,13 @@
 
 - (void)completeDismissal:(id<UIViewControllerContextTransitioning>)ctx
 {
-    UIViewController *toVC = [ctx viewControllerForKey:UITransitionContextToViewControllerKey];
     [UIView animateWithDuration: [self transitionDuration:ctx]
                      animations: ^(void) {
                          [ctx completeTransition:YES];
-                         [[[UIApplication sharedApplication] keyWindow] addSubview:toVC.view];
                      }];
 }
 
-- (void)setSubviewAnimationForPresented:(bool)animatePresentedSubviews forDismissed:(bool)animateDismissedSubviews forPresenting:(bool)animatePresentingSubviews forDismissing:(bool)animateDismissingSubviews
+- (void)setSubviewAnimationForPresented:(BOOL)animatePresentedSubviews forDismissed:(BOOL)animateDismissedSubviews forPresenting:(BOOL)animatePresentingSubviews forDismissing:(BOOL)animateDismissingSubviews
 {
     self.callAnimateSubviewsForPresent = animatePresentedSubviews;
     self.callAnimateSubviewsForDismiss = animateDismissedSubviews;
@@ -113,6 +111,24 @@
     self.transitionDismissalDuration = duration;
 }
 
+- (void)setDurationForPresentationDelay:(NSTimeInterval)delay
+{
+    self.transitionPresentationDelay = delay;
+}
+
+- (void)setDurationForDismissalDelay:(NSTimeInterval)delay
+{
+    self.transitionDismissalDelay = delay;
+}
+
+- (void)setDurationForPresentation:(NSTimeInterval)presentDuration presentationDelay:(NSTimeInterval)presentDelay dismissal:(NSTimeInterval)dismissDuration dismissalDelay:(NSTimeInterval)dismissDelay
+{
+    self.transitionPresentationDuration = presentDuration;
+    self.transitionPresentationDelay = presentDelay;
+    self.transitionDismissalDuration = dismissDuration;
+    self.transitionDismissalDelay = dismissDelay;
+}
+
 // All methods below are for handling the actual animations
 
 - (void)standardFromTop:(id<UIViewControllerContextTransitioning>)ctx :(UIView *)inView :(UIViewController *)toVC :(UIViewController *)fromVC
@@ -126,22 +142,18 @@
             toVC.view.center = inView.center;
         };
         
-        void(^completionBlock)(bool) = ^(bool finished) {
+        void(^completionBlock)(BOOL) = ^(BOOL finished) {
             [self completeAnimation:ctx];
         };
         
         [self handleAnimationWithAnimation:animationBlock andCompletion:completionBlock];
     } else {
-        // fromVC.view.alpha = 1.0;
-        
-        [inView insertSubview:toVC.view belowSubview:fromVC.view];
-        
         void(^animationBlock)(void) = ^() {
             CGPoint finalCenter = CGPointMake(inView.center.x, inView.center.y - inView.frame.size.height);
             fromVC.view.center = finalCenter;
         };
         
-        void(^completionBlock)(bool) = ^(bool finished) {
+        void(^completionBlock)(BOOL) = ^(BOOL finished) {
             [self completeDismissal:ctx];
         };
         
@@ -161,22 +173,18 @@
             toVC.view.center = inView.center;
         };
         
-        void(^completionBlock)(bool) = ^(bool finished) {
+        void(^completionBlock)(BOOL) = ^(BOOL finished) {
             [self completeAnimation:ctx];
         };
         
         [self handleAnimationWithAnimation:animationBlock andCompletion:completionBlock];
     } else {
-        // fromVC.view.alpha = 1.0;
-
-        [inView insertSubview:toVC.view belowSubview:fromVC.view];
-
         void(^animationBlock)(void) = ^() {
             CGPoint finalCenter = CGPointMake(inView.center.x, inView.center.y + inView.frame.size.height);
             fromVC.view.center = finalCenter;
         };
         
-        void(^completionBlock)(bool) = ^(bool finished) {
+        void(^completionBlock)(BOOL) = ^(BOOL finished) {
             [self completeDismissal:ctx];
         };
         
@@ -195,21 +203,18 @@
             toVC.view.center = inView.center;
         };
         
-        void(^completionBlock)(bool) = ^(bool finished) {
+        void(^completionBlock)(BOOL) = ^(BOOL finished) {
             [self completeAnimation:ctx];
         };
         
         [self handleAnimationWithAnimation:animationBlock andCompletion:completionBlock];
     } else {
-        // fromVC.view.alpha = 1.0;
-        [inView insertSubview:toVC.view belowSubview:fromVC.view];
-
         void(^animationBlock)(void) = ^() {
             CGPoint finalCenter = CGPointMake(inView.center.x - inView.frame.size.width, inView.center.y);
             fromVC.view.center = finalCenter;
         };
         
-        void(^completionBlock)(bool) = ^(bool finished) {
+        void(^completionBlock)(BOOL) = ^(BOOL finished) {
             [self completeDismissal:ctx];
         };
         
@@ -228,22 +233,18 @@
             toVC.view.center = inView.center;
         };
         
-        void(^completionBlock)(bool) = ^(bool finished) {
+        void(^completionBlock)(BOOL) = ^(BOOL finished) {
             [self completeAnimation:ctx];
         };
         
         [self handleAnimationWithAnimation:animationBlock andCompletion:completionBlock];
     } else {
-        // fromVC.view.alpha = 1.0;
-        
-        [inView insertSubview:toVC.view belowSubview:fromVC.view];
-
         void(^animationBlock)(void) = ^() {
             CGPoint finalCenter = CGPointMake(inView.center.x + inView.frame.size.width, inView.center.y);
             fromVC.view.center = finalCenter;
         };
         
-        void(^completionBlock)(bool) = ^(bool finished) {
+        void(^completionBlock)(BOOL) = ^(BOOL finished) {
             [self completeDismissal:ctx];
         };
         
@@ -266,7 +267,7 @@
             toVC.view.center = inView.center;
         };
         
-        void(^completionBlock)(bool) = ^(bool finished) {
+        void(^completionBlock)(BOOL) = ^(BOOL finished) {
             [self completeAnimation:ctx];
         };
         
@@ -275,7 +276,6 @@
         CGPoint centerOffScreen = inView.center;
         centerOffScreen.y = (-1)*inView.frame.size.height;
         
-        [inView insertSubview:toVC.view belowSubview:fromVC.view];
         toVC.view.alpha = 0.5;
         
         void(^animationBlock)(void) = ^() {
@@ -284,7 +284,7 @@
             fromVC.view.center = centerOffScreen;
         };
         
-        void(^completionBlock)(bool) = ^(bool finished) {
+        void(^completionBlock)(BOOL) = ^(BOOL finished) {
             [self completeDismissal:ctx];
         };
         
@@ -294,7 +294,7 @@
 }
 
 // Helper Methods
-- (void)handleAnimationWithAnimation:(void (^)(void))animationBlock andCompletion:(void (^)(bool finished))completionOrNil
+- (void)handleAnimationWithAnimation:(void (^)(void))animationBlock andCompletion:(void (^)(BOOL finished))completionOrNil
 {
     if (self.isPresenting) {
         [UIView animateWithDuration:self.transitionPresentationDuration delay:self.transitionPresentationDelay options:0 animations:animationBlock completion:completionOrNil];

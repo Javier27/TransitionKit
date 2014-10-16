@@ -12,11 +12,11 @@
 @interface AnimationController : UIViewController <UIViewControllerAnimatedTransitioning>
 
 /* if presenting, then use present animation, else use dismissing animation */
-@property bool isPresenting;
-@property bool callAnimateSubviewsForPresent;
-@property bool callAnimateSubviewsForPresenting;
-@property bool callAnimateSubviewsForDismiss;
-@property bool callAnimateSubviewsForDismissing;
+@property BOOL isPresenting;
+@property BOOL callAnimateSubviewsForPresent;
+@property BOOL callAnimateSubviewsForPresenting;
+@property BOOL callAnimateSubviewsForDismiss;
+@property BOOL callAnimateSubviewsForDismissing;
 @property TransitionAnimationType animationType;
 
 @property NSTimeInterval transitionPresentationDuration;
@@ -26,8 +26,10 @@
 @property CGFloat dampingRatio;
 @property CGFloat initialVelocity;
 
-- (void)setSubviewAnimationForPresented:(bool)animatePresentedSubviews forDismissed:(bool)animateDismissedSubviews forPresenting:(bool)animatePresentingSubviews forDismissing:(bool)animateDismissingSubviews;
+- (void)setSubviewAnimationForPresented:(BOOL)animatePresentedSubviews forDismissed:(BOOL)animateDismissedSubviews forPresenting:(BOOL)animatePresentingSubviews forDismissing:(BOOL)animateDismissingSubviews;
 -(NSTimeInterval)transitionDuration:(id<UIViewControllerContextTransitioning>)transitionContext;
 -(void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext;
+
+- (void)setDurationForPresentation:(NSTimeInterval)presentDuration presentationDelay:(NSTimeInterval)presentDelay dismissal:(NSTimeInterval)dismissDuration dismissalDelay:(NSTimeInterval)dismissDelay;
 
 @end
